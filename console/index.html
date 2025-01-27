@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query Streams Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="admin-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="logo.png" alt="Query Streams Logo" />
+        </div>
+        <ul class="menu">
+          <li><a href="#" id="dashboard-link" class="active">Dashboard</a></li>
+          <li><a href="#" id="api-link">API</a></li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+          <h1>Dashboard</h1>
+          <div id="stream-tiles" class="tiles"></div>
+        </div>
+
+        <!-- API Documentation Page -->
+        <div id="api-page" class="page">
+          <h1>API Documentation</h1>
+          <p>Explore the APIs provided by Query Streams:</p>
+
+          <div class="api-doc">
+            <h2>1. Create Stream</h2>
+            <p><strong>Endpoint:</strong> <code>POST /streams</code></p>
+            <p>
+              <strong>Description:</strong> Creates a new stream in Query
+              Streams.
+            </p>
+
+            <h3>Parameters</h3>
+            <ul>
+              <li><strong>name:</strong> The name of the stream.</li>
+              <li>
+                <strong>query:</strong> The SQL query to execute on Apache
+                Pinot.
+              </li>
+              <li>
+                <strong>broker_url:</strong> The Pinot broker URL to send the
+                query to.
+              </li>
+              <li>
+                <strong>destination_type:</strong> The type of destination to
+                send the results to (e.g., "webhook").
+              </li>
+              <li>
+                <strong>destination_config:</strong> The configuration for the
+                destination (e.g., webhook URL).
+              </li>
+              <li>
+                <strong>interval:</strong> Query interval in milliseconds for
+                executing the Pinot query.
+              </li>
+              <li>
+                <strong>dedupe:</strong> Enable or disable deduplication of
+                query results (default: <code>false</code>).
+              </li>
+              <li>
+                <strong>dedupe_duration:</strong> The deduplication window
+                duration in milliseconds (valid range: 1000-60000 ms). Required
+                only if <code>dedupe</code> is <code>true</code>.
+              </li>
+            </ul>
+
+            <h3>Sample Request</h3>
+            <pre><code>
+                {
+                    "name": "stream1",
+                    "query": "SELECT * FROM airlineStats LIMIT 10",
+                    "broker_url": "http://localhost:9000/sql",
+                    "destination_type": "webhook",
+                    "destination_config": "https://example.com/webhook",
+                    "interval": 1000,
+                    "dedupe": true,
+                    "dedupe_duration": 30000
+                }
+            </code></pre>
+
+            <h3>Sample Response</h3>
+            <pre><code>
+                {
+                    "message": "Stream created successfully",
+                    "stream_id": "67e2134d-a925-49a4-ac47-11b14ce4b603"
+                }
+            </code></pre>
+          </div>
+
+          <div class="api-doc">
+            <h2>2. Start Stream</h2>
+            <p>
+              <strong>Endpoint:</strong>
+              <code>POST /streams/{stream_id}/start</code>
+            </p>
+            <p><strong>Description:</strong> Starts a stopped stream.</p>
+
+            <h3>Parameters</h3>
+            <ul>
+              <li>
+                <strong>stream_id:</strong> The unique ID of the stream to
+                start.
+              </li>
+            </ul>
+
+            <h3>Sample Request</h3>
+            <pre><code>POST /streams/67e2134d-a925-49a4-ac47-11b14ce4b603/start</code></pre>
+
+            <h3>Sample Response</h3>
+            <pre><code>
+                {
+                    "message": "Stream started successfully",
+                    "stream_id": "67e2134d-a925-49a4-ac47-11b14ce4b603"
+                }
+            </code></pre>
+          </div>
+
+          <div class="api-doc">
+            <h2>3. Stop Stream</h2>
+            <p>
+              <strong>Endpoint:</strong>
+              <code>POST /streams/{stream_id}/stop</code>
+            </p>
+            <p><strong>Description:</strong> Stops a running stream.</p>
+          </div>
+
+          <div class="api-doc">
+            <h2>4. Update Stream</h2>
+            <p>
+              <strong>Endpoint:</strong> <code>PUT /streams/{stream_id}</code>
+            </p>
+            <p><strong>Description:</strong> Updates an existing stream.</p>
+          </div>
+
+          <div class="api-doc">
+            <h2>5. Delete Stream</h2>
+            <p>
+              <strong>Endpoint:</strong>
+              <code>DELETE /streams/{stream_id}</code>
+            </p>
+            <p><strong>Description:</strong> Deletes a stream.</p>
+          </div>
+
+          <div class="api-doc">
+            <h2>6. List Streams</h2>
+            <p><strong>Endpoint:</strong> <code>GET /streams</code></p>
+            <p><strong>Description:</strong> Lists all streams.</p>
+          </div>
+
+          <div class="api-doc">
+            <h2>7. Metrics</h2>
+            <p><strong>Endpoint:</strong> <code>GET /metrics</code></p>
+            <p>
+              <strong>Description:</strong> Retrieves metrics for all streams.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
