@@ -20,29 +20,37 @@ func CreateStreamHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validation for deduplication settings
-	if !stream.Dedupe {
-		if stream.DedupeDuration > 0 {
-			http.Error(w, "dedupe_duration cannot be set if dedupe is false or missing", http.StatusBadRequest)
+	// Validate Pinot configuration
+	if stream.Pinot.Query == "" || stream.Pinot.BrokerURL == "" {
+		http.Error(w, "pinot.query and pinot.broker_url are required", http.StatusBadRequest)
+		return
+	}
+	if stream.Pinot.QueryInterval <= 0 {
+		http.Error(w, "pinot.query_interval must be greater than 0", http.StatusBadRequest)
+		return
+	}
+
+	// Validate Destination configuration
+	if stream.Destination.Type == "" || stream.Destination.URL == "" {
+		http.Error(w, "destination.type and destination.url are required", http.StatusBadRequest)
+		return
+	}
+
+	// Validate Dedupe configuration
+	if stream.Dedupe.Enabled {
+		if stream.Dedupe.Duration < 1000 || stream.Dedupe.Duration > 60000 {
+			http.Error(w, "dedupe.duration must be between 1000ms and 60000ms", http.StatusBadRequest)
 			return
-		}
-		stream.DedupeDuration = 0
-	} else {
-		if stream.DedupeDuration < 1000 {
-			stream.DedupeDuration = 1000
-		} else if stream.DedupeDuration > 60000 {
-			stream.DedupeDuration = 60000
 		}
 	}
 
-	// Create the stream (generate a StreamID internally)
+	// Create the stream
 	err = core.CreateStream(&stream)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Return the created stream's StreamID
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message":  "Stream created successfully",
@@ -124,13 +132,16 @@ func UpdateStreamHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Merge updated fields
 	stream.Name = updatedStream.Name
-	stream.Query = updatedStream.Query
-	stream.BrokerURL = updatedStream.BrokerURL
-	stream.DestinationType = updatedStream.DestinationType
-	stream.DestinationConfig = updatedStream.DestinationConfig
-	stream.Interval = updatedStream.Interval
+	stream.Pinot.Query = updatedStream.Pinot.Query
+	stream.Pinot.BrokerURL = updatedStream.Pinot.BrokerURL
+	stream.Pinot.QueryInterval = updatedStream.Pinot.QueryInterval
+	stream.Pinot.Authentication = updatedStream.Pinot.Authentication
+
+	stream.Destination.Type = updatedStream.Destination.Type
+	stream.Destination.URL = updatedStream.Destination.URL
+	stream.Destination.Authentication = updatedStream.Destination.Authentication
+
 	stream.Dedupe = updatedStream.Dedupe
-	stream.DedupeDuration = updatedStream.DedupeDuration
 
 	// Save the updated stream
 	if err := storage.SaveStream(stream); err != nil {

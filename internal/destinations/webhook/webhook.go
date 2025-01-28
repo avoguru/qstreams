@@ -7,15 +7,15 @@ import (
 )
 
 type Webhook struct {
-	Endpoint string
+	URL string
 }
 
-func NewWebhook(endpoint string) *Webhook {
-	return &Webhook{Endpoint: endpoint}
+func NewWebhook(url string) *Webhook {
+	return &Webhook{URL: url}
 }
 
 func (w *Webhook) Send(data []byte) error {
-	resp, err := http.Post(w.Endpoint, "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(w.URL, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("failed to send data to webhook: %w", err)
 	}
@@ -28,8 +28,12 @@ func (w *Webhook) Send(data []byte) error {
 }
 
 func (w *Webhook) Validate() error {
-	if w.Endpoint == "" {
-		return fmt.Errorf("webhook endpoint cannot be empty")
+	if w.URL == "" {
+		return fmt.Errorf("webhook URL cannot be empty")
 	}
 	return nil
+}
+
+func (w *Webhook) GetURL() string {
+	return w.URL
 }

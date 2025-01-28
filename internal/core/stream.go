@@ -11,16 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewDestination(destType, destConfig string) (destinations.Destination, error) {
-	switch destType {
+func NewDestination(config storage.DestinationConfig) (destinations.Destination, error) {
+	switch config.Type {
 	case "webhook":
-		dest := webhook.NewWebhook(destConfig)
+		dest := webhook.NewWebhook(config.URL)
 		if err := dest.Validate(); err != nil {
 			return nil, fmt.Errorf("invalid webhook configuration: %w", err)
 		}
 		return dest, nil
 	default:
-		return nil, fmt.Errorf("unsupported destination type: %s", destType)
+		return nil, fmt.Errorf("unsupported destination type: %s", config.Type)
 	}
 }
 
@@ -38,7 +38,7 @@ func CreateStream(stream *storage.QueryStream) error {
 	}
 
 	// Create and validate the destination
-	dest, err := NewDestination(stream.DestinationType, stream.DestinationConfig)
+	dest, err := NewDestination(stream.Destination)
 	if err != nil {
 		return fmt.Errorf("failed to create destination for stream '%s': %w", stream.StreamID, err)
 	}
@@ -65,7 +65,7 @@ func RestoreStreams() error {
 			stream.State = "running" // Move to running state
 
 			// Create and validate destination
-			dest, err := NewDestination(stream.DestinationType, stream.DestinationConfig)
+			dest, err := NewDestination(stream.Destination)
 			if err != nil {
 				log.Printf("Failed to initialize stream '%s'. Error: %v", stream.StreamID, err)
 				continue
@@ -89,7 +89,7 @@ func RestoreStreams() error {
 // RestartStreamWorker restarts a worker for a stream
 func RestartStreamWorker(stream *storage.QueryStream) {
 	// Create and validate the destination
-	dest, err := NewDestination(stream.DestinationType, stream.DestinationConfig)
+	dest, err := NewDestination(stream.Destination)
 	if err != nil {
 		log.Printf("Failed to restart stream '%s': invalid destination configuration. Error: %v", stream.StreamID, err)
 		return
