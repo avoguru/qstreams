@@ -76,5 +76,5 @@ docker run -p 8080:8080 qstreams
 http://localhost:8080/console/
 ```
 
-[More on Query Streams here](https://simpletakes.substack.com/)
+[More on Query Streams here](https://gnanaguru.com/p/query-streams-for-apache-pinot)
 
